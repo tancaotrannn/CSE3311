@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import Image from 'next/image'; // 1. IMPORT THE IMAGE COMPONENT
 
 // Initialize Supabase client
 const supabase = createClient(
@@ -20,16 +21,11 @@ export default function Home() {
   useEffect(() => {
     // This listener is the main security checkpoint for your application.
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      // --- THE DEFINITIVE SECURITY CHECK ---
-      // This logic runs every time a user signs in or the page loads.
       if (session && !session.user.email_confirmed_at) {
-        // 1. If a user has a session BUT their email is not yet confirmed...
-        supabase.auth.signOut(); // 2. Immediately sign them out.
-        // 3. Show a specific message telling them what to do.
+        supabase.auth.signOut();
         setMessage('You must confirm your email address before you can sign in. Please check your inbox.');
-        setSession(null); // 4. Ensure the UI shows the login form.
+        setSession(null);
       } else {
-        // If the user is confirmed OR they are logged out (session is null), we can trust the session.
         setSession(session);
         if (session) {
             setMessage('');
@@ -76,7 +72,6 @@ export default function Home() {
       setMessage('');
       const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
-      // The onAuthStateChange listener above will now handle the security check
     } catch (error) {
       setMessage(`Error: ${error.message}`);
     } finally {
@@ -117,6 +112,16 @@ export default function Home() {
   if (!session) {
     return (
       <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center">
+        
+        {/* 2. LOGO ADDED TO LOGIN VIEW */}
+        <Image 
+          src="/Mavbeats.svg" 
+          alt="MavBeats Logo"
+          width={360}
+          height={360}
+          className="mb-6"
+        />
+
         <h1 className="text-5xl font-bold text-[#0064b1] mb-4">MavBeats</h1>
         <p className="text-lg text-gray-600 mb-8">Sign in or create an account with your Maverick email.</p>
         <form className="w-full max-w-sm">
@@ -158,7 +163,21 @@ export default function Home() {
     <main className="min-h-screen bg-[#ffffff] text-gray-800 p-10">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-12">
-          <h1 className="text-3xl font-bold">Welcome, {session.user.email}!</h1>
+          
+          {/* 3. LOGO ADDED TO DASHBOARD VIEW */}
+          <div className="flex items-center gap-4">
+            <Image 
+              src="/Mavbeats.svg"
+              alt="MavBeats Logo"
+              width={240}
+              height={240}
+            />
+            <div>
+              <h1 className="text-2xl font-bold">MavBeats</h1>
+              <p className="text-sm text-gray-600 mt-1">{session.user.email}</p>
+            </div>
+          </div>
+          
           <button onClick={signOut} className="bg-[#c45517] text-white font-bold py-2 px-4 rounded-lg hover:bg-gray-400 transition duration-300">
             Sign Out
           </button>
