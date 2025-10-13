@@ -50,17 +50,46 @@ function TopArtistsList({ data, title }) {
     );
 }
 
+// The updated, more robust helper function
+function formatGenre(genreName) {
+    const acronyms = ['edm', 'r&b', 'ccm', 'opm', 'vbs', 'lds'];
+
+    if (acronyms.includes(genreName.toLowerCase())) {
+        return genreName.toUpperCase();
+    }
+
+    return genreName.replace(/(^|\s|-)\S/g, (match) => match.toUpperCase());
+}
+
 function TopGenresChart({ data, title, onGenreSelect }) {
     if (!data || data.length === 0) return <p className="text-center text-gray-500 p-4">No genre data available.</p>;
+
+    // 1. Create formatted data for display
+    const formattedData = data.map(genre => ({
+        ...genre,
+        displayName: formatGenre(genre.name),
+    }));
+
     const chartHeight = 250 + data.length * 20;
     const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF4560', '#775DD0', '#546E7A', '#26a69a', '#D10CE8'];
+    
     return (
         <div className="bg-white border rounded-xl shadow p-6 mb-4">
             <h3 className="text-lg font-bold mb-2">{title}</h3>
             <ResponsiveContainer width="100%" height={chartHeight}>
                 <PieChart>
-                    <Pie data={data} dataKey="count" nameKey="name" cx="50%" cy="50%" outerRadius={100} onClick={(d) => onGenreSelect(d.name)} label={(entry) => entry.name}>
-                        {data.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
+                    {/* 2. Use formattedData, 'displayName' for nameKey and labels */}
+                    <Pie 
+                        data={formattedData} 
+                        dataKey="count" 
+                        nameKey="displayName" 
+                        cx="50%" 
+                        cy="50%" 
+                        outerRadius={100} 
+                        onClick={(payload) => onGenreSelect(payload.name)} // 3. The payload still has original 'name'
+                        label={(entry) => entry.displayName}
+                    >
+                        {formattedData.map((entry, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />)}
                     </Pie>
                     <Tooltip />
                     <Legend />
@@ -71,33 +100,47 @@ function TopGenresChart({ data, title, onGenreSelect }) {
 }
 
 function TopGenresBarChart({ data, title, onGenreSelect }) {
-  if (!data || data.length === 0) return <p className="text-center text-gray-500 p-4">No genre data available.</p>;
-  const chartHeight = data.length * 40 + 50;
-  return (
-    <div className="bg-white border rounded-xl shadow p-6 mb-4">
-      <h3 className="text-lg font-bold mb-2">{title}</h3>
-      <ResponsiveContainer width="100%" height={chartHeight}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis type="number" allowDecimals={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={120} interval={0} />
-          <Tooltip />
-          <Bar dataKey="count" fill="#0064b1" onClick={(d) => onGenreSelect(d.name)} />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
+    if (!data || data.length === 0) return <p className="text-center text-gray-500 p-4">No genre data available.</p>;
+
+    // 1. Create formatted data for display
+    const formattedData = data.map(genre => ({
+        ...genre,
+        displayName: formatGenre(genre.name),
+    }));
+
+    const chartHeight = data.length * 40 + 50;
+    
+    return (
+        <div className="bg-white border rounded-xl shadow p-6 mb-4">
+            <h3 className="text-lg font-bold mb-2">{title}</h3>
+            <ResponsiveContainer width="100%" height={chartHeight}>
+                {/* 2. Pass the new formattedData to the chart */}
+                <BarChart data={formattedData} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis type="number" allowDecimals={false} />
+                    {/* 3. Use 'displayName' for the Y-axis labels */}
+                    <YAxis type="category" dataKey="displayName" tick={{ fontSize: 12 }} width={80} interval={0} />
+                    <Tooltip />
+                    {/* 4. The onClick payload still contains the original 'name' */}
+                    <Bar dataKey="count" fill="#0064b1" onClick={(payload) => onGenreSelect(payload.name)} />
+                </BarChart>
+            </ResponsiveContainer>
+        </div>
+    );
 }
 
 function TopGenresList({ data, title, onGenreSelect }) {
     if (!data || data.length === 0) return <p className="text-center text-gray-500 p-4">No genre data available.</p>;
+
     return (
         <div className="bg-white border rounded-xl shadow p-6 mb-4">
             <h3 className="text-lg font-bold mb-4">{title}</h3>
             <ol className="list-decimal list-inside space-y-2">
                 {data.map((genre) => (
                     <li key={genre.name} onClick={() => onGenreSelect(genre.name)} className="text-gray-700 p-1 rounded-md hover:bg-gray-100 cursor-pointer">
-                        <span className="font-bold text-gray-800">{genre.name}</span>
+                        <span className="font-bold text-gray-800">
+                            {formatGenre(genre.name)}
+                        </span>
                         <span className="text-sm text-gray-500"> ({genre.count} instances)</span>
                     </li>
                 ))}
@@ -113,10 +156,10 @@ function TopSongsBarChart({ data, title }) {
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={chartHeight}>
-        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 100, bottom: 5 }}>
+        <BarChart data={data} layout="vertical" margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
-          <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={120} interval={0} />
+          <YAxis type="category" dataKey="name" tick={{ fontSize: 12 }} width={80} interval={0} />
           <Tooltip cursor={{fill: 'rgba(238, 238, 238, 0.5)'}}/>
           <Bar dataKey="count" fill="#C45517" />
         </BarChart>
@@ -141,7 +184,7 @@ function GenreSongsList({ songs, genre, onClear }) {
     return (
         <div className="mt-8 bg-white border rounded-xl shadow p-6">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-lg font-bold">Top Songs for <span className="text-blue-600">{genre}</span></h3>
+                <h3 className="text-lg font-bold">Top Songs for <span className="text-[#0064b1]">{genre}</span></h3>
                 <button onClick={onClear} className="text-sm text-gray-500 hover:text-gray-800">× Clear</button>
             </div>
             {songs.length > 0 ? (
@@ -292,7 +335,7 @@ export default function Home() {
   const visibleGenres = fullTopGenres.slice(0, genreLimit);
 
   if (!session) { /* Login Form JSX */ return ( <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center"><Image src="/Mavbeats.svg" alt="MavBeats Logo" width={360} height={360} className="mb-6"/><h1 className="text-5xl font-bold text-[#0064b1] mb-4">MavBeats</h1><p className="text-lg text-gray-600 mb-8">Sign in or create an account with your Maverick email.</p><form className="w-full max-w-sm"><input type="email" placeholder="your.name@mavs.uta.edu" value={email} onChange={(e) => setEmail(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800" required/><input type="password" placeholder="Password" value={password} onChange={(e) => setPassword(e.target.value)} className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800" required/><div className="flex gap-4"><button onClick={handleSignIn} disabled={loading} className="w-full bg-[#0064b1] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400">{loading ? '...' : 'Sign In'}</button><button onClick={handleSignUp} disabled={loading} className="w-full bg-[#c45517] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400">{loading ? '...' : 'Sign Up'}</button></div></form><p className={`mt-4 text-sm font-semibold ${message.startsWith('Error') ? 'text-red-500' : 'text-green-500'}`}>{message}</p></main> ); }
-  if (!session.user.identities?.some(id => id.provider === 'spotify')) { /* Connect Spotify JSX */ return ( <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center"><h1 className="text-3xl font-bold text-gray-800 mb-4">Almost there, {session.user.email}!</h1><p className="text-lg text-gray-600 mb-8">Please connect your Spotify account to continue.</p><button onClick={() => supabase.auth.signInWithOAuth({ provider: 'spotify', options: { scopes: 'user-read-recently-played user-top-read' }})} className="bg-[#1DB954] text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transition duration-300">Connect Spotify</button><button onClick={signOut} className="text-sm text-gray-500 mt-8 hover:underline">Sign Out</button></main> ); }
+  if (!session.user.identities?.some(id => id.provider === 'spotify')) { /* Connect Spotify JSX */ return ( <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center"><h1 className="text-3xl font-bold text-gray-800 mb-4">Almost there, {session.user.email}!</h1><p className="text-lg text-gray-600 mb-8">Please connect your Spotify account to continue.</p><button onClick={() => supabase.auth.signInWithOAuth({ provider: 'spotify', options: { scopes: 'user-read-recently-played user-top-read user-read-email' }})} className="bg-[#1DB954] text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transition duration-300">Connect Spotify</button><button onClick={signOut} className="text-sm text-gray-500 mt-8 hover:underline">Sign Out</button></main> ); }
 
   return (
     <div className="min-h-screen bg-[#f7f7f7]">
