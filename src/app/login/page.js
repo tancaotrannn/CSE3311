@@ -26,19 +26,33 @@ export default function LoginPage() {
     if (error) {
       setMessage(`Error: ${error.message}`);
       setLoading(false);
-
       return;
     }
 
     const { data } = await supabase.auth.getSession();
+    const session = data?.session;
 
-    if (
+    const hasSpotify = session?.user?.identities?.some(
+      (id) => id.provider === "sptify"
+    );
+
+    setLoading(false);
+
+    if (hasSpotify) {
+      router.replace("/");
+    } else {
+      router.replace("/connectSpotify");
+    }
+
+    /* if (
       !data?.session?.user?.identities?.some((id) => id.provider === "spotify")
     ) {
       router.replace("/connectSpotify");
     } else {
       router.replace("/");
     }
+
+    */
   }
 
   //2. Sign up function
