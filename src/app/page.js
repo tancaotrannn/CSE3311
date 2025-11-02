@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
+import React, { use } from "react";
 import { useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
+import supabase from "./utils/supabaseClient";
 import Image from "next/image";
+
 import {
   BarChart,
   Bar,
@@ -19,12 +21,6 @@ import {
 } from "recharts";
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
-
-// Initialize Supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-);
 
 // --- Reusable Chart/List Components ---
 function TopArtistsChart({ data, title }) {
@@ -338,10 +334,17 @@ const TabButton = ({ label, activeTab, onClick }) => {
 };
 
 export default function Home() {
+  const router = useRouter();
   const [session, setSession] = useState(null);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (!session) {
+        router.replace("/login");
+      }
+    });
+  }, [router]);
+
   const [message, setMessage] = useState("");
 
   const [fullTopArtists, setFullTopArtists] = useState([]);
@@ -532,23 +535,6 @@ export default function Home() {
     initializeDashboard();
   }, [session]);
 
-  async function handleSignUp(event) {
-    event.preventDefault();
-    setLoading(true);
-    await supabase.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo: window.location.origin },
-    });
-    setMessage("Check your email.");
-    setLoading(false);
-  }
-  async function handleSignIn(event) {
-    event.preventDefault();
-    setLoading(true);
-    await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
-  }
   async function signOut() {
     await supabase.auth.signOut();
   }
@@ -557,96 +543,12 @@ export default function Home() {
   const visibleSongs = fullTopSongs.slice(0, songLimit);
   const visibleGenres = fullTopGenres.slice(0, genreLimit);
 
-  if (!session) {
-    /* Login Form JSX */ return (
-      <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center">
-        <Image
-          src="/Mavbeats.svg"
-          alt="MavBeats Logo"
-          width={360}
-          height={360}
-          className="mb-6"
-        />
-        <h1 className="text-5xl font-bold text-[#0064b1] mb-4">MavBeats</h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Sign in or create an account with your Maverick email.
-        </p>
-        <form className="w-full max-w-sm">
-          <input
-            type="email"
-            placeholder="your.name@mavs.uta.edu"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800"
-            required
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800"
-            required
-          />
-          <div className="flex gap-4">
-            <button
-              onClick={handleSignIn}
-              disabled={loading}
-              className="w-full bg-[#0064b1] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400"
-            >
-              {loading ? "..." : "Sign In"}
-            </button>
-            <button
-              onClick={handleSignUp}
-              disabled={loading}
-              className="w-full bg-[#c45517] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400"
-            >
-              {loading ? "..." : "Sign Up"}
-            </button>
-          </div>
-        </form>
-        <p
-          className={`mt-4 text-sm font-semibold ${
-            message.startsWith("Error") ? "text-red-500" : "text-green-500"
-          }`}
-        >
-          {message}
-        </p>
-      </main>
-    );
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
   }
-  if (!session.user.identities?.some((id) => id.provider === "spotify")) {
-    /* Connect Spotify JSX */ return (
-      <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">
-          Almost there, {session.user.email}!
-        </h1>
-        <p className="text-lg text-gray-600 mb-8">
-          Please connect your Spotify account to continue.
-        </p>
-        <button
-          onClick={() =>
-            supabase.auth.signInWithOAuth({
-              provider: "spotify",
-              options: {
-                scopes:
-                  "user-read-recently-played user-top-read user-read-email",
-              },
-            })
-          }
-          className="bg-[#1DB954] text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transition duration-300"
-        >
-          Connect Spotify
-        </button>
-        <button
-          onClick={signOut}
-          className="text-sm text-gray-500 mt-8 hover:underline"
-        >
-          Sign Out
-        </button>
-      </main>
-    );
-  }
+
+  if (!session) return null; // or a loading spinner
 
   return (
     <div className="min-h-screen bg-[#f7f7f7]">
