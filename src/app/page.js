@@ -20,6 +20,10 @@ import {
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+console.log("URL:", process.env.NEXT_PUBLIC_SUPABASE_URL);
+console.log("KEY:", process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY);
+
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -532,23 +536,41 @@ export default function Home() {
     initializeDashboard();
   }, [session]);
 
-  async function handleSignUp(event) {
-    event.preventDefault();
+  async function handleSignUp(e) {
+    e.preventDefault();
     setLoading(true);
-    await supabase.auth.signUp({
+  
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: { emailRedirectTo: window.location.origin },
     });
-    setMessage("Check your email.");
+  
+    console.log("Sign-up result:", data, error);
+  
+    if (error) setMessage(` ${error.message}`);
+    else setMessage("Check your Maverick email to confirm your account.");
+  
     setLoading(false);
   }
-  async function handleSignIn(event) {
-    event.preventDefault();
+  
+  async function handleSignIn(e) {
+    e.preventDefault();
     setLoading(true);
-    await supabase.auth.signInWithPassword({ email, password });
+  
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+  
+    console.log("Sign-in result:", data, error);
+  
+    if (error) setMessage(` ${error.message}`);
+    else setMessage(" Signed in successfully!");
+  
     setLoading(false);
   }
+  
   async function signOut() {
     await supabase.auth.signOut();
   }
