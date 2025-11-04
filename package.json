@@ -32,6 +32,8 @@
     "start": "next start",
     "lint": "eslint",
     "export": "next build && next export"
+    "deploy": "gh-pages -d out -b thommy-branch"
+}
   },
   "homepage": "https://tancaotrannn.github.io/MavBeats"
 }
