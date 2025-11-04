@@ -31,8 +31,8 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "export": "next build && next export"
-    "deploy": "gh-pages -d out -b thommy-branch"
+    "export": "next build && next export",
+    "deploy": "gh-pages -d out -b deploy-branch"
   },
   "homepage": "https://tancaotrannn.github.io/MavBeats"
 }
