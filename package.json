@@ -28,8 +28,10 @@
   },
   "scripts": {
     "dev": "next dev --turbopack",
-    "build": "next build",
+    "build": "next build --turbopack",
     "start": "next start",
-    "lint": "eslint"
-  }
+    "lint": "eslint",
+    "export": "next build && next export"
+  },
+  "homepage": "https://tancaotrannn.github.io/MavBeats"
 }
