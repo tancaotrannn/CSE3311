@@ -119,7 +119,7 @@ export default function LoginPage() {
           </button>
         </div>
       </form>
-      <p>{message}</p>
+      <p className="text-red-400">{message}</p>
     </main>
   );
 }
