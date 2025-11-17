@@ -22,6 +22,8 @@ import {
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+/* eslint react/prop-types: 0  */
+
 // --- Reusable Chart/List Components ---
 function TopArtistsChart({ data, title }) {
   if (!data || data.length === 0)
@@ -537,16 +539,13 @@ export default function Home() {
 
   async function signOut() {
     await supabase.auth.signOut();
+    router.replace("/login");
+
   }
 
   const visibleArtists = fullTopArtists.slice(0, artistLimit);
   const visibleSongs = fullTopSongs.slice(0, songLimit);
   const visibleGenres = fullTopGenres.slice(0, genreLimit);
-
-  async function signOut() {
-    await supabase.auth.signOut();
-    router.replace("/login");
-  }
 
   if (!session) return null; // or a loading spinner
 

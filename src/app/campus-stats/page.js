@@ -19,6 +19,8 @@ import {
   Legend,
 } from "recharts";
 
+/* eslint react/prop-types: 0 */
+
 function TopArtistsChart({ data, title }) {
   if (!data || data.length === 0)
     return (
