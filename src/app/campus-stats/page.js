@@ -1,9 +1,8 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import supabase from "../utils/supabaseClient";
-import LoadingSpinner from "@/components/LoadingSpinner";
-import Navbar from "@/components/Navbar";
 
 import {
   BarChart,
@@ -18,14 +17,14 @@ import {
   Cell,
   Legend,
 } from "recharts";
+import Navbar from "../../components/Navbar";
+import LoadingSpinner from "../../components/LoadingSpinner";
 
 /* eslint react/prop-types: 0 */
 
 function TopArtistsChart({ data, title }) {
   if (!data || data.length === 0)
-    return (
-      <p className="text-center text-gray-500 p-4">No artist data available.</p>
-    );
+    return <p className="text-center text-gray-500 p-4">No artist data available.</p>;
   const chartHeight = data.length * 40 + 50;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
@@ -34,8 +33,7 @@ function TopArtistsChart({ data, title }) {
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-        >
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
           <YAxis
@@ -55,9 +53,7 @@ function TopArtistsChart({ data, title }) {
 
 function TopArtistsList({ data, title }) {
   if (!data || data.length === 0)
-    return (
-      <p className="text-center text-gray-500 p-4">No artist data available.</p>
-    );
+    return <p className="text-center text-gray-500 p-4">No artist data available.</p>;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-4">{title}</h3>
@@ -65,10 +61,7 @@ function TopArtistsList({ data, title }) {
         {data.map((artist) => (
           <li key={artist.name} className="text-gray-700">
             <span className="font-bold text-gray-800">{artist.name}</span>
-            <span className="text-sm text-gray-500">
-              {" "}
-              ({artist.count} plays)
-            </span>
+            <span className="text-sm text-gray-500"> ({artist.count} plays)</span>
           </li>
         ))}
       </ol>
@@ -78,9 +71,7 @@ function TopArtistsList({ data, title }) {
 
 function TopSongsBarChart({ data, title }) {
   if (!data || data.length === 0)
-    return (
-      <p className="text-center text-gray-500 p-4">No song data available.</p>
-    );
+    return <p className="text-center text-gray-500 p-4">No song data available.</p>;
   const chartHeight = data.length * 40 + 50;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
@@ -89,8 +80,7 @@ function TopSongsBarChart({ data, title }) {
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-        >
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
           <YAxis
@@ -110,9 +100,7 @@ function TopSongsBarChart({ data, title }) {
 
 function TopSongsList({ data, title }) {
   if (!data || data.length === 0)
-    return (
-      <p className="text-center text-gray-500 p-4">No song data available.</p>
-    );
+    return <p className="text-center text-gray-500 p-4">No song data available.</p>;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-4">{title}</h3>
@@ -129,12 +117,16 @@ function TopSongsList({ data, title }) {
   );
 }
 
-function TabButton({ label, activeTab, onClick }) {
+
+const TabButton = ({ label, activeTab, onClick }) => {
   const isActive = activeTab === label.toLowerCase().replace(" ", "");
-  let activeColorClasses = "text-[#0064B1] border-[#0064B1]";
+
+  // Determine active color based on the button's label
+  let activeColorClasses = "text-[#0064B1] border-[#0064B1]"; // Default blue
   if (label === "Top Songs") {
-    activeColorClasses = "text-[#C45517] border-[#C45517]";
+    activeColorClasses = "text-[#C45517] border-[#C45517]"; // Orange for Top Songs
   }
+
   return (
     <button
       onClick={onClick}
@@ -147,18 +139,45 @@ function TabButton({ label, activeTab, onClick }) {
       {label}
     </button>
   );
-}
+};
 
 export default function CampusStats() {
+  const router = useRouter();
+  const [session, setSession] = useState(null);
   const [fullTopArtists, setFullTopArtists] = useState([]);
   const [fullTopSongs, setFullTopSongs] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
-
   const [activeTab, setActiveTab] = useState("topartists");
   const ARTIST_DEFAULT_LIMIT = 10;
   const SONG_DEFAULT_LIMIT = 10;
   const [artistLimit, setArtistLimit] = useState(ARTIST_DEFAULT_LIMIT);
   const [songLimit, setSongLimit] = useState(SONG_DEFAULT_LIMIT);
+
+  //State for view types
+  const [artistViewType, setArtistViewType] = useState("bar");
+  const [songViewType, setSongViewType] = useState("bar");
+  const [genreViewType, setGenreViewType] = useState("pie");
+
+  useEffect(() => {
+    // Get session on mount, subscribe to changes
+    const fetchSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setSession(session);
+      if (!session) router.replace("/login");
+    };
+    fetchSession();
+
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (!session) router.replace("/login");
+    });
+    return () => authListener?.unsubscribe?.();
+  }, [router]);
+
+  async function signOut() {
+    await supabase.auth.signOut();
+    router.replace("/login");
+  }
 
   useEffect(() => {
     async function fetchCampusData() {
@@ -171,7 +190,6 @@ export default function CampusStats() {
         setAnalyticsLoading(false);
         return;
       }
-
       const artistCounts = {};
       plays.forEach((p) =>
         p.artist_name
@@ -196,7 +214,6 @@ export default function CampusStats() {
         })
         .sort((a, b) => b.count - a.count);
       setFullTopSongs(sortedSongs);
-
       setAnalyticsLoading(false);
     }
     fetchCampusData();
@@ -205,9 +222,14 @@ export default function CampusStats() {
   const visibleArtists = fullTopArtists.slice(0, artistLimit);
   const visibleSongs = fullTopSongs.slice(0, songLimit);
 
+  // Only render once session is not null
+  if (!session) {
+    return <LoadingSpinner />;
+  }
+
   return (
     <div className="min-h-screen bg-[#f7f7f7]">
-      <Navbar />
+      <Navbar user={session.user} onSignOut={signOut} />
       <main className="text-gray-800 p-10">
         <div className="max-w-4xl mx-auto">
           <div className="mb-8">
@@ -236,14 +258,28 @@ export default function CampusStats() {
             <div>
               {activeTab === "topartists" && (
                 <div>
-                  <TopArtistsChart
-                    data={visibleArtists}
-                    title="Campus Top Artists"
-                  />
-                  <TopArtistsList
-                    data={visibleArtists}
-                    title="Campus Top Artists"
-                  />
+                  <div className="flex justify-end mb-4">
+                    <select
+                      value={artistViewType}
+                      onChange={(e) => setArtistViewType(e.target.value)}
+                      className="p-2 border rounded-md bg-white shadow-sm"
+                    >
+                      <option value="bar">Bar Chart</option>
+                      <option value="list">List</option>
+                    </select>
+                  </div>
+                  {artistViewType === "bar" && (
+                    <TopArtistsChart
+                      data={visibleArtists}
+                      title="Mavs' Top Artists"
+                    />
+                  )}
+                  {artistViewType === "list" && (
+                    <TopArtistsList
+                      data={visibleArtists}
+                      title="Mavs' Top Artists"
+                    />
+                  )}
                   <div className="flex gap-4 justify-center">
                     {artistLimit > ARTIST_DEFAULT_LIMIT && (
                       <button
@@ -270,11 +306,25 @@ export default function CampusStats() {
               )}
               {activeTab === "topsongs" && (
                 <div>
-                  <TopSongsBarChart
-                    data={visibleSongs}
-                    title="Campus Top Songs"
-                  />
-                  <TopSongsList data={visibleSongs} title="Campus Top Songs" />
+                  <div className="flex justify-end mb-4">
+                    <select
+                      value={songViewType}
+                      onChange={(e) => setSongViewType(e.target.value)}
+                      className="p-2 border rounded-md bg-white shadow-sm"
+                    >
+                      <option value="bar">Bar Chart</option>
+                      <option value="list">List</option>
+                    </select>
+                  </div>
+                  {songViewType === "bar" && (
+                    <TopSongsBarChart
+                      data={visibleSongs}
+                      title="Mavs' Top Songs"
+                    />
+                  )}
+                  {songViewType === "list" && (
+                    <TopSongsList data={visibleSongs} title="Mavs' Top Songs" />
+                  )}
                   <div className="flex gap-4 justify-center">
                     {songLimit > SONG_DEFAULT_LIMIT && (
                       <button
@@ -297,6 +347,78 @@ export default function CampusStats() {
                       </button>
                     )}
                   </div>
+                </div>
+              )}
+              {activeTab === "topgenres" && (
+                <div>
+                  <div className="flex justify-end mb-4">
+                    <select
+                      value={genreViewType}
+                      onChange={(e) => setGenreViewType(e.target.value)}
+                      className="p-2 border rounded-md bg-white shadow-sm"
+                    >
+                      <option value="pie">Pie Chart</option>
+                      <option value="bar">Bar Chart</option>
+                      <option value="list">List</option>
+                    </select>
+                  </div>
+                  {genreViewType === "pie" && (
+                    <TopGenresChart
+                      data={visibleGenres}
+                      title="Your Top Genres"
+                      onGenreSelect={handleGenreSelect}
+                    />
+                  )}
+                  {genreViewType === "bar" && (
+                    <TopGenresBarChart
+                      data={visibleGenres}
+                      title="Your Top Genres"
+                      onGenreSelect={handleGenreSelect}
+                    />
+                  )}
+                  {genreViewType === "list" && (
+                    <TopGenresList
+                      data={visibleGenres}
+                      title="Your Top Genres"
+                      onGenreSelect={handleGenreSelect}
+                    />
+                  )}
+                  <div className="flex gap-4 justify-center">
+                    {genreLimit > GENRE_DEFAULT_LIMIT && (
+                      <button
+                        onClick={() =>
+                          setGenreLimit((prev) =>
+                            Math.max(GENRE_DEFAULT_LIMIT, prev - 5)
+                          )
+                        }
+                        className="w-full text-center bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300"
+                      >
+                        Show Less
+                      </button>
+                    )}
+                    {fullTopGenres.length > genreLimit && (
+                      <button
+                        onClick={() => setGenreLimit((prev) => prev + 5)}
+                        className="w-full text-center bg-gray-200 text-gray-700 font-bold py-2 px-4 rounded-lg hover:bg-gray-300"
+                      >
+                        Show More
+                      </button>
+                    )}
+                  </div>
+                  {selectedGenre ? (
+                    <GenreSongsList
+                      songs={songsForGenre}
+                      genre={selectedGenre}
+                      onClear={() => setSelectedGenre(null)}
+                    />
+                  ) : (
+                    <div className="mt-8 bg-white border rounded-xl shadow p-6 text-center text-gray-500">
+                      <p>
+                        Click a genre above to see Mavs' top songs from that
+                        category.
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

@@ -540,7 +540,6 @@ export default function Home() {
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/login");
-
   }
 
   const visibleArtists = fullTopArtists.slice(0, artistLimit);
