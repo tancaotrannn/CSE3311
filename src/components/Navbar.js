@@ -3,7 +3,6 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import DarkModeToggle from "./DarkModeToggle";
 
 /* eslint react/prop-types: 0  */
 
@@ -28,8 +27,6 @@ export default function Navbar({ user, onSignOut }) {
 
         {/* Center: Navigation Tabs */}
         <div className="flex gap-8 items-center">
-          // <DarkModeToggle />
-          
           <Link
             href="/"
             className={
