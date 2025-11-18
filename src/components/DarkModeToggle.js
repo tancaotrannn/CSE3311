@@ -9,6 +9,9 @@ export default function DarkModeToggle() {
 
   // Initialize dark mode state from localStorage on mount
   useEffect(() => {
+    // Check if we're on the client side
+    if (typeof window === "undefined") return;
+    
     const savedMode = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(savedMode);
     
@@ -24,6 +27,9 @@ export default function DarkModeToggle() {
   }, []);
 
   const toggleDarkMode = () => {
+    // Check if we're on the client side
+    if (typeof window === "undefined") return;
+    
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem("darkMode", newMode.toString());
