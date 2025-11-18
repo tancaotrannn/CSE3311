@@ -1,39 +1,46 @@
 "use client";
-
+/* eslint-disable no-undef */
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import * as DarkReader from "darkreader";
 
-/* eslint-disable no-restricted-globals */
-/* eslint-disable no-undef */
-
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
+  // Initialize dark mode state from localStorage on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const saved = window.localStorage.getItem("darkMode");
-      if (saved === "true") {
-        setIsDarkMode(true);
-        DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
-      }
+    const savedMode = localStorage.getItem("darkMode") === "true";
+    setIsDarkMode(savedMode);
+    
+    if (savedMode) {
+      DarkReader.enable({
+        brightness: 100,
+        contrast: 90,
+        sepia: 10
+      });
     }
+    
+    setIsLoading(false);
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-
-    if (typeof window !== "undefined") {
-      window.localStorage.setItem("darkMode", String(newMode));
-    }
+    localStorage.setItem("darkMode", newMode.toString());
 
     if (newMode) {
-      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
+      DarkReader.enable({
+        brightness: 100,
+        contrast: 90,
+        sepia: 10
+      });
     } else {
       DarkReader.disable();
     }
   };
+
+  if (isLoading) return null;
 
   return (
     <button
@@ -43,7 +50,7 @@ export default function DarkModeToggle() {
     >
       <Image
         src="/sun.svg"
-        alt="Toggle Dark Mode"
+        alt="Dark Mode Toggle"
         width={24}
         height={24}
       />
