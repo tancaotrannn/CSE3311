@@ -33,7 +33,7 @@ export default function LoginPage() {
     const session = data?.session;
 
     const hasSpotify = session?.user?.identities?.some(
-      (id) => id.provider === "sptify"
+      (id) => id.provider === "spotify"
     );
 
     setLoading(false);
