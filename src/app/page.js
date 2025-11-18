@@ -77,7 +77,7 @@ function TopArtistsChart({ data, title }) {
           position="insideLeft"
           className="custom-bar-label"
           content={(props) => {
-            const { x, y, width, value } = props;
+            const { x, y, value } = props;
 
             const truncated =
               value.length > 18 ? value.substring(0, 18) + "..." : value;
@@ -325,7 +325,7 @@ function TopSongsBarChart({ data, title }) {
           position="insideLeft"
           className="custom-bar-label"
           content={(props) => {
-            const { x, y, width, value } = props;
+            const { x, y, value } = props;
 
             const truncated =
               value.length > 18 ? value.substring(0, 18) + "..." : value;
