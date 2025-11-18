@@ -16,6 +16,7 @@ import {
   Pie,
   Cell,
   Legend,
+  LabelList,
 } from "recharts";
 import Navbar from "../../components/Navbar";
 import LoadingSpinner from "../../components/LoadingSpinner";
@@ -23,6 +24,25 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 /* eslint react/prop-types: 0 */
 
 function TopArtistsChart({ data, title }) {
+   const [expandedText, setExpandedText] = useState(null);
+    {expandedText && (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          zIndex: 9999,
+        }}
+        onClick={() => setExpandedText(null)}
+      >
+        {expandedText}
+      </div>
+    )}
   if (!data || data.length === 0)
     return (
       <p className="text-center text-gray-500 p-4">No artist data available.</p>
@@ -39,15 +59,42 @@ function TopArtistsChart({ data, title }) {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
-          <YAxis
-            type="category"
-            dataKey="name"
-            tick={{ fontSize: 12 }}
-            width={80}
-            interval={0}
-          />
-          <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
-          <Bar dataKey="count" fill="#0064B1" />
+         <YAxis
+                   type="category"
+                   dataKey="name"
+                   width={10}     // tiny width; labels hidden
+                   tick={false}   // hide broken labels
+                   />
+                   <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
+                   <Bar dataKey="count" fill="#0064B1">
+                   
+                   <LabelList 
+                   dataKey="name"
+                   position="insideLeft"
+                   className="custom-bar-label"
+                   content={(props) => {
+                     const { x, y, width, value } = props;
+         
+                     const truncated =
+                       value.length > 18 ? value.substring(0, 18) + "..." : value;
+         
+                     return (
+                       <text
+                         x={x + 5}
+                         y={y + 15}
+                         fill="#fff"
+                         fontSize={16}
+                         fontWeight="bold"          
+                         textAnchor="start"
+                         style={{ cursor: "pointer" }}
+                         onClick={() => setExpandedText(value)}
+                       >
+                         {truncated}
+                       </text>
+                     );
+                   }}
+                   />
+                   </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -78,6 +125,26 @@ function TopArtistsList({ data, title }) {
 }
 
 function TopSongsBarChart({ data, title }) {
+  const [expandedText, setExpandedText] = useState(null);
+    {expandedText && (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          zIndex: 9999,
+        }}
+        onClick={() => setExpandedText(null)}
+      >
+        {expandedText}
+      </div>
+    )}
+  
   if (!data || data.length === 0)
     return (
       <p className="text-center text-gray-500 p-4">No song data available.</p>
@@ -94,15 +161,39 @@ function TopSongsBarChart({ data, title }) {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
-          <YAxis
+           <YAxis
             type="category"
             dataKey="name"
-            tick={{ fontSize: 12 }}
-            width={80}
-            interval={0}
-          />
-          <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
-          <Bar dataKey="count" fill="#C45517" />
+            width={10}     // tiny width; labels hidden
+            tick={false}   // hide broken labels
+            />
+            <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
+            <Bar dataKey="count" fill="#C45517" >
+            <LabelList 
+            dataKey="name"
+            position="insideLeft"
+            className="custom-bar-label"
+            content={(props) => {
+            const { x, y, width, value } = props;
+            const truncated =
+            value.length > 18 ? value.substring(0, 18) + "..." : value;
+            return (
+            <text
+            x={x + 5}
+            y={y + 15}
+            fill="#fff"
+            fontSize={16}
+            fontWeight="bold"          
+            textAnchor="start"
+            style={{ cursor: "pointer" }}
+            onClick={() => setExpandedText(value)}
+            >
+            {truncated}
+            </text>
+            );
+            }}
+            />
+            </Bar>
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -162,6 +253,9 @@ function GenreSongsList({ songs, genre, onClear }) {
     </div>
   );
 }
+
+
+
 
 // The updated, more robust helper function
 function formatGenre(genreName) {

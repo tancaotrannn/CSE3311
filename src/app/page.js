@@ -432,26 +432,6 @@ const TabButton = ({ label, activeTab, onClick }) => {
   );
 };
 
-const CustomYAxisTick = ({ x, y, payload, onClick }) => {
-  const text = payload.value;
-  const truncated =
-    text.length > 18 ? text.substring(0, 18) + "..." : text;
-
-  return (
-    <text
-      x={x + 10}       // Slight padding only
-      y={y + 5}
-      textAnchor="start"  // Show label to the right of axis
-      fontSize={12}
-      fill="#333"
-      style={{ cursor: "pointer" }}
-      onClick={() => onClick(text)}
-    >
-      {truncated}
-    </text>
-  );
-};
-
 
 
 
