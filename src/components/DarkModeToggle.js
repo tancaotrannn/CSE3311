@@ -8,19 +8,25 @@ export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    const saved = typeof window !== "undefined" ? localStorage.getItem("darkMode") : null;
-    if (saved === "true") {
-      setIsDarkMode(true);
-      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
+    // Safe access only in browser
+    if (typeof window !== "undefined") {
+      const saved = window.localStorage.getItem("darkMode");
+      if (saved === "true") {
+        setIsDarkMode(true);
+        DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
+      }
     }
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
+
+    // Safe access only in browser
     if (typeof window !== "undefined") {
-      localStorage.setItem("darkMode", String(newMode));
+      window.localStorage.setItem("darkMode", String(newMode));
     }
+
     if (newMode) {
       DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
     } else {
@@ -36,7 +42,7 @@ export default function DarkModeToggle() {
     >
       <Image
         src="/sun.svg"
-        alt="Dark Mode Toggle"
+        alt="Toggle Dark Mode"
         width={24}
         height={24}
       />
