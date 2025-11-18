@@ -1,10 +1,9 @@
 "use client";
 
-import React, { use } from "react";
+import React from "react";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import supabase from "./utils/supabaseClient";
-import Image from "next/image";
 
 import {
   BarChart,
@@ -347,6 +346,7 @@ export default function Home() {
     });
   }, [router]);
 
+  // eslint-disable-next-line no-unused-vars
   const [message, setMessage] = useState("");
 
   const [fullTopArtists, setFullTopArtists] = useState([]);

@@ -2,6 +2,8 @@ import React from "react";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 
+/* eslint react/prop-types: 0  */
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

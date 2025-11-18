@@ -4,7 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-export default function Navbar({ user, onSignOut, active = "home" }) {
+/* eslint react/prop-types: 0  */
+
+export default function Navbar({ user, onSignOut }) {
   // Use the Spotify display name from user_metadata, or fall back to the email
   const displayName = user?.user_metadata?.name || user?.email;
   const pathname = usePathname();

@@ -24,7 +24,9 @@ import LoadingSpinner from "../../components/LoadingSpinner";
 
 function TopArtistsChart({ data, title }) {
   if (!data || data.length === 0)
-    return <p className="text-center text-gray-500 p-4">No artist data available.</p>;
+    return (
+      <p className="text-center text-gray-500 p-4">No artist data available.</p>
+    );
   const chartHeight = data.length * 40 + 50;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
@@ -33,7 +35,8 @@ function TopArtistsChart({ data, title }) {
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
           <YAxis
@@ -53,7 +56,9 @@ function TopArtistsChart({ data, title }) {
 
 function TopArtistsList({ data, title }) {
   if (!data || data.length === 0)
-    return <p className="text-center text-gray-500 p-4">No artist data available.</p>;
+    return (
+      <p className="text-center text-gray-500 p-4">No artist data available.</p>
+    );
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-4">{title}</h3>
@@ -61,7 +66,10 @@ function TopArtistsList({ data, title }) {
         {data.map((artist) => (
           <li key={artist.name} className="text-gray-700">
             <span className="font-bold text-gray-800">{artist.name}</span>
-            <span className="text-sm text-gray-500"> ({artist.count} plays)</span>
+            <span className="text-sm text-gray-500">
+              {" "}
+              ({artist.count} plays)
+            </span>
           </li>
         ))}
       </ol>
@@ -71,7 +79,9 @@ function TopArtistsList({ data, title }) {
 
 function TopSongsBarChart({ data, title }) {
   if (!data || data.length === 0)
-    return <p className="text-center text-gray-500 p-4">No song data available.</p>;
+    return (
+      <p className="text-center text-gray-500 p-4">No song data available.</p>
+    );
   const chartHeight = data.length * 40 + 50;
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
@@ -80,7 +90,8 @@ function TopSongsBarChart({ data, title }) {
         <BarChart
           data={data}
           layout="vertical"
-          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+        >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
           <YAxis
@@ -100,7 +111,9 @@ function TopSongsBarChart({ data, title }) {
 
 function TopSongsList({ data, title }) {
   if (!data || data.length === 0)
-    return <p className="text-center text-gray-500 p-4">No song data available.</p>;
+    return (
+      <p className="text-center text-gray-500 p-4">No song data available.</p>
+    );
   return (
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-4">{title}</h3>
@@ -117,6 +130,183 @@ function TopSongsList({ data, title }) {
   );
 }
 
+function GenreSongsList({ songs, genre, onClear }) {
+  return (
+    <div className="mt-8 bg-white border rounded-xl shadow p-6">
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-bold">
+          Top Songs for <span className="text-[#0064b1]">{genre}</span>
+        </h3>
+        <button
+          onClick={onClear}
+          className="text-sm text-gray-500 hover:text-gray-800"
+        >
+          × Clear
+        </button>
+      </div>
+      {songs.length > 0 ? (
+        <ol className="list-decimal list-inside space-y-2">
+          {songs.map((song) => (
+            <li key={`${song.name}-${song.artist}`}>
+              {" "}
+              <span className="font-semibold">{song.name}</span> by{" "}
+              {song.artist}{" "}
+            </li>
+          ))}
+        </ol>
+      ) : (
+        <p className="text-gray-500">
+          No specific songs found for this genre in your top tracks.
+        </p>
+      )}
+    </div>
+  );
+}
+
+// The updated, more robust helper function
+function formatGenre(genreName) {
+  const acronyms = ["edm", "r&b", "ccm", "opm", "vbs", "lds"];
+
+  if (acronyms.includes(genreName.toLowerCase())) {
+    return genreName.toUpperCase();
+  }
+
+  return genreName.replace(/(^|\s|-)\S/g, (match) => match.toUpperCase());
+}
+
+function TopGenresChart({ data, title, onGenreSelect }) {
+  if (!data || data.length === 0)
+    return (
+      <p className="text-center text-gray-500 p-4">No genre data available.</p>
+    );
+
+  // 1. Create formatted data for display
+  const formattedData = data.map((genre) => ({
+    ...genre,
+    displayName: formatGenre(genre.name),
+  }));
+
+  const chartHeight = 250 + data.length * 20;
+  const COLORS = [
+    "#0088FE",
+    "#00C49F",
+    "#FFBB28",
+    "#FF8042",
+    "#AF19FF",
+    "#FF4560",
+    "#775DD0",
+    "#546E7A",
+    "#26a69a",
+    "#D10CE8",
+  ];
+
+  return (
+    <div className="bg-white border rounded-xl shadow p-6 mb-4">
+      <h3 className="text-lg font-bold mb-2">{title}</h3>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        <PieChart>
+          {/* 2. Use formattedData, 'displayName' for nameKey and labels */}
+          <Pie
+            data={formattedData}
+            dataKey="count"
+            nameKey="displayName"
+            cx="50%"
+            cy="50%"
+            outerRadius={100}
+            onClick={(payload) => onGenreSelect(payload.name)} // 3. The payload still has original 'name'
+            label={(entry) => entry.displayName}
+          >
+            {formattedData.map((entry, index) => (
+              <Cell
+                key={`cell-${index}`}
+                fill={COLORS[index % COLORS.length]}
+              />
+            ))}
+          </Pie>
+          <Tooltip />
+          <Legend />
+        </PieChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function TopGenresBarChart({ data, title, onGenreSelect }) {
+  if (!data || data.length === 0)
+    return (
+      <p className="text-center text-gray-500 p-4">No genre data available.</p>
+    );
+
+  // 1. Create formatted data for display
+  const formattedData = data.map((genre) => ({
+    ...genre,
+    displayName: formatGenre(genre.name),
+  }));
+
+  const chartHeight = data.length * 40 + 50;
+
+  return (
+    <div className="bg-white border rounded-xl shadow p-6 mb-4">
+      <h3 className="text-lg font-bold mb-2">{title}</h3>
+      <ResponsiveContainer width="100%" height={chartHeight}>
+        {/* 2. Pass the new formattedData to the chart */}
+        <BarChart
+          data={formattedData}
+          layout="vertical"
+          margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
+        >
+          <CartesianGrid strokeDasharray="3 3" />
+          <XAxis type="number" allowDecimals={false} />
+          {/* 3. Use 'displayName' for the Y-axis labels */}
+          <YAxis
+            type="category"
+            dataKey="displayName"
+            tick={{ fontSize: 12 }}
+            width={80}
+            interval={0}
+          />
+          <Tooltip />
+          {/* 4. The onClick payload still contains the original 'name' */}
+          <Bar
+            dataKey="count"
+            fill="#0064b1"
+            onClick={(payload) => onGenreSelect(payload.name)}
+          />
+        </BarChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}
+
+function TopGenresList({ data, title, onGenreSelect }) {
+  if (!data || data.length === 0)
+    return (
+      <p className="text-center text-gray-500 p-4">No genre data available.</p>
+    );
+
+  return (
+    <div className="bg-white border rounded-xl shadow p-6 mb-4">
+      <h3 className="text-lg font-bold mb-4">{title}</h3>
+      <ol className="list-decimal list-inside space-y-2">
+        {data.map((genre) => (
+          <li
+            key={genre.name}
+            onClick={() => onGenreSelect(genre.name)}
+            className="text-gray-700 p-1 rounded-md hover:bg-gray-100 cursor-pointer"
+          >
+            <span className="font-bold text-gray-800">
+              {formatGenre(genre.name)}
+            </span>
+            <span className="text-sm text-gray-500">
+              {" "}
+              ({genre.count} instances)
+            </span>
+          </li>
+        ))}
+      </ol>
+    </div>
+  );
+}
 
 const TabButton = ({ label, activeTab, onClick }) => {
   const isActive = activeTab === label.toLowerCase().replace(" ", "");
@@ -144,14 +334,26 @@ const TabButton = ({ label, activeTab, onClick }) => {
 export default function CampusStats() {
   const router = useRouter();
   const [session, setSession] = useState(null);
+
+  // eslint-disable-next-line no-unused-vars
+  const [message, setMessage] = useState("");
+
   const [fullTopArtists, setFullTopArtists] = useState([]);
   const [fullTopSongs, setFullTopSongs] = useState([]);
+  const [fullTopGenres, setFullTopGenres] = useState([]);
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
+  const [artistGenreMap, setArtistGenreMap] = useState(new Map());
+
   const [activeTab, setActiveTab] = useState("topartists");
+  const [selectedGenre, setSelectedGenre] = useState(null);
+  const [songsForGenre, setSongsForGenre] = useState([]);
+
   const ARTIST_DEFAULT_LIMIT = 10;
   const SONG_DEFAULT_LIMIT = 10;
+  const GENRE_DEFAULT_LIMIT = 5;
   const [artistLimit, setArtistLimit] = useState(ARTIST_DEFAULT_LIMIT);
   const [songLimit, setSongLimit] = useState(SONG_DEFAULT_LIMIT);
+  const [genreLimit, setGenreLimit] = useState(GENRE_DEFAULT_LIMIT);
 
   //State for view types
   const [artistViewType, setArtistViewType] = useState("bar");
@@ -161,16 +363,20 @@ export default function CampusStats() {
   useEffect(() => {
     // Get session on mount, subscribe to changes
     const fetchSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       setSession(session);
       if (!session) router.replace("/login");
     };
     fetchSession();
 
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      if (!session) router.replace("/login");
-    });
+    const { data: authListener } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setSession(session);
+        if (!session) router.replace("/login");
+      }
+    );
     return () => authListener?.unsubscribe?.();
   }, [router]);
 
@@ -219,8 +425,141 @@ export default function CampusStats() {
     fetchCampusData();
   }, []);
 
+  async function fetchCampusGenreStats() {
+    //fetch all plays from Supabase
+    const { data: plays, error: playsError } = await supabase
+      .from("plays")
+      .select("artist_name, track_name, artist_ids");
+    if (playsError) {
+      console.error("Error fetching campus plays", playsError);
+      return;
+    }
+
+    const uniqueArtistIds = [
+      ...new Set(
+        plays.flatMap((p) => (p.artist_ids ? p.artist_ids.split(",") : []))
+      ),
+    ];
+
+    // Handle Spotify token as needed for system-wide
+    const {
+      data: { session: currentSession },
+    } = await supabase.auth.getSession();
+    const spotifyToken = currentSession?.provider_token;
+    if (spotifyToken && uniqueArtistIds.length > 0) {
+      const tempArtistGenreMap = new Map();
+      const artistChunks = [];
+      for (let i = 0; i < uniqueArtistIds.length; i += 50) {
+        artistChunks.push(uniqueArtistIds.slice(i, i + 50));
+      }
+      for (const chunk of artistChunks) {
+        const artistIdsParam = chunk.join(",");
+        const artistResponse = await fetch(
+          `https://api.spotify.com/v1/artists?ids=${artistIdsParam}`,
+          {
+            headers: {
+              Authorization: `Bearer ${spotifyToken}`,
+            },
+          }
+        );
+        const artistDetails = await artistResponse.json();
+        artistDetails?.artists?.forEach((artist) => {
+          if (artist) {
+            tempArtistGenreMap.set(artist.name, artist.genres);
+          }
+        });
+      }
+      setArtistGenreMap(tempArtistGenreMap);
+
+      // Aggregate genres
+      const genreCounts = {};
+      tempArtistGenreMap.forEach((genres) => {
+        genres.forEach((genre) => {
+          genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+        });
+      });
+      const sortedGenres = Object.entries(genreCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count);
+      setFullTopGenres(sortedGenres);
+    }
+  }
+
+  async function syncRecentPlays() {
+    setMessage("Syncing with Spotify...");
+    const {
+      data: { session },
+    } = await supabase.auth.getSession();
+    const spotifyToken = session?.provider_token;
+    if (!spotifyToken) {
+      setMessage("Error: Spotify token not found.");
+      return;
+    }
+
+    try {
+      const sinceTimestamp = new Date("2025-09-01T00:00:00").getTime();
+      const apiUrl = `https://api.spotify.com/v1/me/player/recently-played?limit=50&after=${sinceTimestamp}`;
+      const response = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${spotifyToken}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch from Spotify");
+      const plays = await response.json();
+
+      if (!plays.items || plays.items.length === 0) {
+        setMessage("");
+        return;
+      }
+
+      const rows = plays.items.map((item) => ({
+        user_id: session.user.id,
+        track_name: item.track.name,
+        artist_name: item.track.artists.map((a) => a.name).join(", "),
+        artist_ids: item.track.artists.map((a) => a.id).join(","),
+        played_at: item.played_at,
+      }));
+      await supabase
+        .from("plays")
+        .upsert(rows, { onConflict: "user_id, played_at" });
+      setMessage("Sync complete!");
+    } catch (e) {
+      setMessage(`Error: ${e.message}`);
+      console.error(e);
+    }
+  }
+
+  useEffect(() => {
+    async function initializeDashboard() {
+      if (session) {
+        await syncRecentPlays();
+        await fetchCampusGenreStats();
+      }
+    }
+    initializeDashboard();
+  }, [session]);
+
+  function handleGenreSelect(genreName) {
+    if (!genreName) return;
+    if (selectedGenre === genreName) {
+      setSelectedGenre(null);
+      setSongsForGenre([]);
+      return;
+    }
+    setSelectedGenre(genreName);
+
+    // Filter campus-wide songs for selected genre
+    const filteredSongs = fullTopSongs.filter((song) => {
+      const artists = song.artist.split(", ");
+      return artists.some((artistName) => {
+        const genres = artistGenreMap.get(artistName);
+        return genres && genres.includes(genreName);
+      });
+    });
+    setSongsForGenre(filteredSongs.slice(0, 10)); // or whatever limit you want
+  }
+
   const visibleArtists = fullTopArtists.slice(0, artistLimit);
   const visibleSongs = fullTopSongs.slice(0, songLimit);
+  const visibleGenres = fullTopGenres.slice(0, genreLimit);
 
   // Only render once session is not null
   if (!session) {
@@ -249,6 +588,11 @@ export default function CampusStats() {
                 label="Top Songs"
                 activeTab={activeTab}
                 onClick={() => setActiveTab("topsongs")}
+              />
+              <TabButton
+                label="Top Genres"
+                activeTab={activeTab}
+                onClick={() => setActiveTab("topgenres")}
               />
             </nav>
           </div>
@@ -365,21 +709,21 @@ export default function CampusStats() {
                   {genreViewType === "pie" && (
                     <TopGenresChart
                       data={visibleGenres}
-                      title="Your Top Genres"
+                      title="Campus Top Genres"
                       onGenreSelect={handleGenreSelect}
                     />
                   )}
                   {genreViewType === "bar" && (
                     <TopGenresBarChart
                       data={visibleGenres}
-                      title="Your Top Genres"
+                      title="Campus Top Genres"
                       onGenreSelect={handleGenreSelect}
                     />
                   )}
                   {genreViewType === "list" && (
                     <TopGenresList
                       data={visibleGenres}
-                      title="Your Top Genres"
+                      title="Campus Top Genres"
                       onGenreSelect={handleGenreSelect}
                     />
                   )}
@@ -414,7 +758,7 @@ export default function CampusStats() {
                   ) : (
                     <div className="mt-8 bg-white border rounded-xl shadow p-6 text-center text-gray-500">
                       <p>
-                        Click a genre above to see Mavs' top songs from that
+                        Click a genre above to see Mavs top songs from that
                         category.
                       </p>
                     </div>
