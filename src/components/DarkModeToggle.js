@@ -7,7 +7,7 @@ import * as DarkReader from "darkreader";
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Load the saved theme only in the browser
+  // Load saved preference only in the browser
   useEffect(() => {
     const saved = localStorage.getItem("darkMode");
     if (saved === "true") {
@@ -16,7 +16,8 @@ export default function DarkModeToggle() {
     }
   }, []);
 
-  const toggleDarkMode = () took => {
+  // Fixed arrow function (the only thing that was broken)
+  const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem("darkMode", String(newMode));
