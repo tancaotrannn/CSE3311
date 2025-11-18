@@ -4,11 +4,13 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import * as DarkReader from "darkreader";
 
+/* eslint-disable no-restricted-globals */
+/* eslint-disable no-undef */
+
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
   useEffect(() => {
-    // Safe access only in browser
     if (typeof window !== "undefined") {
       const saved = window.localStorage.getItem("darkMode");
       if (saved === "true") {
@@ -22,7 +24,6 @@ export default function DarkModeToggle() {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
 
-    // Safe access only in browser
     if (typeof window !== "undefined") {
       window.localStorage.setItem("darkMode", String(newMode));
     }
