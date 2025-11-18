@@ -1,10 +1,9 @@
-"use client";
+'use client';
 
-import React from "react";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
+import { createClient } from '@supabase/supabase-js';
 import { useRouter } from "next/navigation";
-import supabase from "./utils/supabaseClient";
-
+import Image from 'next/image'; // <--- THIS WAS MISSING
 import {
   BarChart,
   Bar,
@@ -22,7 +21,11 @@ import {
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 
-/* eslint react/prop-types: 0  */
+// Initialize Supabase client
+const supabase = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+);
 
 // --- Reusable Chart/List Components ---
 function TopArtistsChart({ data, title }) {
@@ -128,14 +131,11 @@ function TopArtistsList({ data, title }) {
   );
 }
 
-// The updated, more robust helper function
 function formatGenre(genreName) {
   const acronyms = ["edm", "r&b", "ccm", "opm", "vbs", "lds"];
-
   if (acronyms.includes(genreName.toLowerCase())) {
     return genreName.toUpperCase();
   }
-
   return genreName.replace(/(^|\s|-)\S/g, (match) => match.toUpperCase());
 }
 
@@ -145,7 +145,6 @@ function TopGenresChart({ data, title, onGenreSelect }) {
       <p className="text-center text-gray-500 p-4">No genre data available.</p>
     );
 
-  // 1. Create formatted data for display
   const formattedData = data.map((genre) => ({
     ...genre,
     displayName: formatGenre(genre.name),
@@ -170,7 +169,6 @@ function TopGenresChart({ data, title, onGenreSelect }) {
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={chartHeight}>
         <PieChart>
-          {/* 2. Use formattedData, 'displayName' for nameKey and labels */}
           <Pie
             data={formattedData}
             dataKey="count"
@@ -178,7 +176,7 @@ function TopGenresChart({ data, title, onGenreSelect }) {
             cx="50%"
             cy="50%"
             outerRadius={100}
-            onClick={(payload) => onGenreSelect(payload.name)} // 3. The payload still has original 'name'
+            onClick={(payload) => onGenreSelect(payload.name)}
             label={(entry) => entry.displayName}
           >
             {formattedData.map((entry, index) => (
@@ -202,7 +200,6 @@ function TopGenresBarChart({ data, title, onGenreSelect }) {
       <p className="text-center text-gray-500 p-4">No genre data available.</p>
     );
 
-  // 1. Create formatted data for display
   const formattedData = data.map((genre) => ({
     ...genre,
     displayName: formatGenre(genre.name),
@@ -214,7 +211,6 @@ function TopGenresBarChart({ data, title, onGenreSelect }) {
     <div className="bg-white border rounded-xl shadow p-6 mb-4">
       <h3 className="text-lg font-bold mb-2">{title}</h3>
       <ResponsiveContainer width="100%" height={chartHeight}>
-        {/* 2. Pass the new formattedData to the chart */}
         <BarChart
           data={formattedData}
           layout="vertical"
@@ -222,7 +218,6 @@ function TopGenresBarChart({ data, title, onGenreSelect }) {
         >
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
-          {/* 3. Use 'displayName' for the Y-axis labels */}
           <YAxis
             type="category"
             dataKey="displayName"
@@ -231,10 +226,9 @@ function TopGenresBarChart({ data, title, onGenreSelect }) {
             interval={0}
           />
           <Tooltip />
-          {/* 4. The onClick payload still contains the original 'name' */}
           <Bar
             dataKey="count"
-            fill="#0064b1"
+            fill="#0064B1"
             onClick={(payload) => onGenreSelect(payload.name)}
           />
         </BarChart>
@@ -412,10 +406,9 @@ function GenreSongsList({ songs, genre, onClear }) {
 const TabButton = ({ label, activeTab, onClick }) => {
   const isActive = activeTab === label.toLowerCase().replace(" ", "");
 
-  // Determine active color based on the button's label
-  let activeColorClasses = "text-[#0064B1] border-[#0064B1]"; // Default blue
+  let activeColorClasses = "text-[#0064B1] border-[#0064B1]";
   if (label === "Top Songs") {
-    activeColorClasses = "text-[#C45517] border-[#C45517]"; // Orange for Top Songs
+    activeColorClasses = "text-[#C45517] border-[#C45517]";
   }
 
   return (
@@ -459,29 +452,27 @@ const CustomYAxisTick = ({ x, y, payload, onClick }) => {
 export default function Home() {
   const router = useRouter();
   const [session, setSession] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  
+  // Auth state
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState('');
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) {
-        router.replace("/login");
-      }
-    });
-  }, [router]);
-
-  // eslint-disable-next-line no-unused-vars
-  const [message, setMessage] = useState("");
-
+  // Data state
   const [fullTopArtists, setFullTopArtists] = useState([]);
   const [fullTopSongs, setFullTopSongs] = useState([]);
   const [fullTopGenres, setFullTopGenres] = useState([]);
   const [artistGenreMap, setArtistGenreMap] = useState(new Map());
   const [analyticsLoading, setAnalyticsLoading] = useState(true);
 
+  // UI state
   const [activeTab, setActiveTab] = useState("topartists");
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [songsForGenre, setSongsForGenre] = useState([]);
-
-  // NEW: State for view types
+  
   const [artistViewType, setArtistViewType] = useState("bar");
   const [songViewType, setSongViewType] = useState("bar");
   const [genreViewType, setGenreViewType] = useState("pie");
@@ -559,6 +550,7 @@ export default function Home() {
 
         for (const chunk of artistChunks) {
           const artistIdsParam = chunk.join(",");
+          // --- Corrected Spotify API URL ---
           const artistResponse = await fetch(
             `https://api.spotify.com/v1/artists?ids=${artistIdsParam}`,
             { headers: { Authorization: `Bearer ${spotifyToken}` } }
@@ -620,6 +612,7 @@ export default function Home() {
 
     try {
       const sinceTimestamp = new Date("2025-09-01T00:00:00").getTime();
+      // --- Corrected Spotify API URL ---
       const apiUrl = `https://api.spotify.com/v1/me/player/recently-played?limit=50&after=${sinceTimestamp}`;
       const response = await fetch(apiUrl, {
         headers: { Authorization: `Bearer ${spotifyToken}` },
@@ -659,6 +652,35 @@ export default function Home() {
     initializeDashboard();
   }, [session]);
 
+  async function handleSignIn(event) {
+    event.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) setMessage(error.message);
+    setLoading(false);
+  }
+
+  async function handleSignUp(event) {
+    event.preventDefault();
+    setLoading(true);
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        emailRedirectTo: window.location.origin,
+      },
+    });
+    if (error) {
+      setMessage(error.message);
+    } else {
+      setMessage("Check your email for the confirmation link!");
+    }
+    setLoading(false);
+  }
+
   async function signOut() {
     await supabase.auth.signOut();
     router.replace("/login");
@@ -668,7 +690,179 @@ export default function Home() {
   const visibleSongs = fullTopSongs.slice(0, songLimit);
   const visibleGenres = fullTopGenres.slice(0, genreLimit);
 
-  if (!session) return null; // or a loading spinner
+  if (!session) {
+    return (
+      <>
+        <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center">
+          <Image
+            src="/Mavbeats.svg"
+            alt="MavBeats Logo"
+            width={360}
+            height={360}
+            className="mb-6"
+          />
+          <h1 className="text-5xl font-bold text-[#0064b1] mb-4">MavBeats</h1>
+          <p className="text-lg text-gray-600 mb-8">
+            Sign in or create an account with your Maverick email.
+          </p>
+          <form className="w-full max-w-sm">
+            <input
+              type="email"
+              placeholder="your.name@mavs.uta.edu"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800"
+              required
+            />
+            <input
+              type="password"
+              placeholder="Password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full px-4 py-2 border border-gray-300 rounded-md mb-4 text-gray-800"
+              required
+            />
+            <div className="flex gap-4">
+              <button
+                onClick={handleSignIn}
+                disabled={loading}
+                className="w-full bg-[#0064b1] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400"
+              >
+                {loading ? "..." : "Sign In"}
+              </button>
+              <button
+                onClick={handleSignUp}
+                disabled={loading || !termsAccepted}
+                className="w-full bg-[#c45517] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400"
+              >
+                {loading ? "..." : "Sign Up"}
+              </button>
+            </div>
+          </form>
+          <div className="mt-4 text-sm text-gray-500">
+            <input
+              type="checkbox"
+              id="terms"
+              checked={termsAccepted}
+              onChange={(e) => setTermsAccepted(e.target.checked)}
+              className="mr-2"
+            />
+            <label htmlFor="terms">
+              I agree to the{" "}
+              <button
+                onClick={() => setIsModalOpen(true)}
+                className="underline hover:text-blue-600"
+              >
+                Terms of Service
+              </button>
+              .
+            </label>
+          </div>
+          <p
+            className={`mt-4 text-sm font-semibold ${
+              message.startsWith("Error") ? "text-red-500" : "text-green-500"
+            }`}
+          >
+            {message}
+          </p>
+        </main>
+
+        {isModalOpen && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full">
+              <h2 className="text-2xl font-bold mb-4 text-[#0064B1]">
+                Terms of Service & Data Usage
+              </h2>
+              <div className="text-left space-y-4 text-gray-700">
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    Do you store my Spotify password?
+                  </h3>
+                  <p>
+                    No. We **never** see, handle, or store your Spotify
+                    password. All authentication is handled securely by
+                    Spotify&apos;s official login page.
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    What Spotify data will be accessed?
+                  </h3>
+                  <p>
+                    To provide your personal stats, we request permission to
+                    access:
+                  </p>
+                  <ul className="list-disc list-inside ml-4 mt-2">
+                    <li>
+                      Your basic Spotify profile information (username and
+                      email).
+                    </li>
+                    <li>
+                      Your recently played tracks to build your listening
+                      history.
+                    </li>
+                    <li>
+                      Your top artists to determine genre preferences.
+                    </li>
+                  </ul>
+                </div>
+                <div>
+                  <h3 className="font-semibold text-gray-800">
+                    How often is my data retrieved?
+                  </h3>
+                  <p>
+                    To keep your stats up-to-date, our app automatically syncs
+                    your latest listening history from Spotify each time you
+                    open or refresh the dashboard. We do not track your
+                    listening in the background.
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:opacity-90"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  if (!session.user.identities?.some((id) => id.provider === "spotify")) {
+    return (
+      <main className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center p-10 text-center">
+        <h1 className="text-3xl font-bold text-gray-800 mb-4">
+          Almost there, {session.user.email}!
+        </h1>
+        <p className="text-lg text-gray-600 mb-8">
+          Please connect your Spotify account to continue.
+        </p>
+        <button
+          onClick={() =>
+            supabase.auth.signInWithOAuth({
+              provider: "spotify",
+              options: {
+                scopes:
+                  "user-read-recently-played user-top-read user-read-email",
+              },
+            })
+          }
+          className="bg-[#1DB954] text-white font-bold py-3 px-8 rounded-full hover:opacity-90 transition duration-300"
+        >
+          Connect Spotify
+        </button>
+        <button
+          onClick={signOut}
+          className="text-sm text-gray-500 mt-8 hover:underline"
+        >
+          Sign Out
+        </button>
+      </main>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#f7f7f7]">
