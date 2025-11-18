@@ -7,21 +7,20 @@ import * as DarkReader from "darkreader";
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
 
-  // Load saved preference only in the browser
   useEffect(() => {
-    const saved = localStorage.getItem("darkMode");
+    const saved = typeof window !== "undefined" ? localStorage.getItem("darkMode") : null;
     if (saved === "true") {
       setIsDarkMode(true);
       DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
     }
   }, []);
 
-  // Fixed arrow function (the only thing that was broken)
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("darkMode", String(newMode));
-
+    if (typeof window !== "undefined") {
+      localStorage.setItem("darkMode", String(newMode));
+    }
     if (newMode) {
       DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
     } else {
