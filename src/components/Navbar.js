@@ -28,7 +28,7 @@ export default function Navbar({ user, onSignOut }) {
 
         {/* Center: Navigation Tabs */}
         <div className="flex gap-8 items-center">
-          <DarkModeToggle />
+          // <DarkModeToggle />
           
           <Link
             href="/"
