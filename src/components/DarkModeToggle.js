@@ -5,12 +5,11 @@ import * as DarkReader from "darkreader";
 
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Initialize dark mode state from localStorage on mount
+  // Only run on client side after mount
   useEffect(() => {
-    // Check if we're on the client side
-    if (typeof window === "undefined") return;
+    setIsMounted(true);
     
     const savedMode = localStorage.getItem("darkMode") === "true";
     setIsDarkMode(savedMode);
@@ -22,14 +21,9 @@ export default function DarkModeToggle() {
         sepia: 10
       });
     }
-    
-    setIsLoading(false);
   }, []);
 
   const toggleDarkMode = () => {
-    // Check if we're on the client side
-    if (typeof window === "undefined") return;
-    
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
     localStorage.setItem("darkMode", newMode.toString());
@@ -45,7 +39,8 @@ export default function DarkModeToggle() {
     }
   };
 
-  if (isLoading) return null;
+  // Don't render until mounted on client
+  if (!isMounted) return null;
 
   return (
     <button
