@@ -1,59 +1,58 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import * as DarkReader from "darkreader";
 
 export default function DarkModeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);  // ← Removed <boolean>
+  const [isMounted, setIsMounted] = useState(false);    // ← Removed <boolean>
 
-  // Only run on client side after mount
   useEffect(() => {
     setIsMounted(true);
-    
-    const savedMode = localStorage.getItem("darkMode") === "true";
-    setIsDarkMode(savedMode);
-    
-    if (savedMode) {
-      DarkReader.enable({
-        brightness: 100,
-        contrast: 90,
-        sepia: 10
-      });
+
+    const saved = localStorage.getItem("darkMode");
+    const prefersDark = saved === "true";
+    setIsDarkMode(prefersDark);
+
+    if (prefersDark) {
+      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
     }
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("darkMode", newMode.toString());
+    localStorage.setItem("darkMode", String(newMode));
 
     if (newMode) {
-      DarkReader.enable({
-        brightness: 100,
-        contrast: 90,
-        sepia: 10
-      });
+      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
     } else {
       DarkReader.disable();
     }
   };
 
-  // Don't render until mounted on client
-  if (!isMounted) return null;
+  // Avoid hydration mismatch
+  if (!isMounted) {
+    return (
+      <button className="p-2 rounded-lg opacity-0" disabled aria-hidden="true">
+        <Image src="/sun.svg" alt="" width={24} height={24} />
+      </button>
+    );
+  }
 
   return (
     <button
       onClick={toggleDarkMode}
-      className="p-2 rounded-lg hover:bg-gray-200 transition duration-300"
+      className="p-2 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700 transition duration-300"
       title={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+      aria-label={isDarkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
     >
-      <Image
-        src="/sun.svg"
-        alt="Dark Mode Toggle"
-        width={24}
-        height={24}
-      />
+      {isDarkMode ? (
+        <Image src="/sun.svg" alt="Light mode" width={24} height={24} />
+      ) : (
+        <Image src="/moon.svg" alt="Dark mode" width={24} height={24} />
+      )}
     </button>
   );
 }
