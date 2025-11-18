@@ -17,7 +17,7 @@ export default function Navbar({ user, onSignOut }) {
         {/* Left Side: Logo and App Name */}
         <div className="flex items-center gap-4">
           <Image
-            src="/Mavbeats.svg"
+            src="/MavBeats.svg"
             alt="MavBeats Logo"
             width={160}
             height={160}

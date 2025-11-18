@@ -72,7 +72,7 @@ export default function LoginPage() {
   return (
     <main className="bg-[#ffffff] min-h-screen flex flex-col items-center justify-center p-10 text-center">
       <Image
-        src="/Mavbeats.svg"
+        src="/MavBeats.svg"
         alt="MavBeats Logo"
         width={360}
         height={360}
