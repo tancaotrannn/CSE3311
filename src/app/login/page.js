@@ -12,6 +12,10 @@ export default function LoginPage() {
   const [message, setMessage] = useState("");
   const router = useRouter();
 
+  // --- NEW STATE FOR TERMS OF SERVICE ---
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+
   // 1. Sign in function
   async function handleSignIn(e) {
     e.preventDefault();
@@ -43,16 +47,6 @@ export default function LoginPage() {
     } else {
       router.replace("/connectSpotify");
     }
-
-    /* if (
-      !data?.session?.user?.identities?.some((id) => id.provider === "spotify")
-    ) {
-      router.replace("/connectSpotify");
-    } else {
-      router.replace("/");
-    }
-
-    */
   }
 
   //2. Sign up function
@@ -110,16 +104,97 @@ export default function LoginPage() {
             {loading ? "..." : "Sign In"}
           </button>
 
+          {/* UPDATED: Button disabled if terms not accepted */}
           <button
             onClick={handleSignUp}
-            disabled={loading}
+            disabled={loading || !termsAccepted}
             className="w-full bg-[#c45517] text-white font-bold py-3 px-4 rounded-md hover:opacity-90 transition duration-300 disabled:bg-gray-400"
           >
             {loading ? "..." : "Sign Up"}
           </button>
         </div>
       </form>
+
+      {/* NEW: Checkbox for Terms of Service */}
+      <div className="mt-4 text-sm text-gray-500">
+        <input
+          type="checkbox"
+          id="terms"
+          checked={termsAccepted}
+          onChange={(e) => setTermsAccepted(e.target.checked)}
+          className="mr-2"
+        />
+        <label htmlFor="terms">
+          I agree to the{" "}
+          <button
+            type="button" // Prevent form submission
+            onClick={() => setIsModalOpen(true)}
+            className="underline hover:text-blue-600"
+          >
+            Terms of Service
+          </button>
+          .
+        </label>
+      </div>
+
       <p className="text-red-400">{message}</p>
+
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-lg shadow-xl max-w-lg w-full">
+            <h2 className="text-2xl font-bold mb-4 text-[#0064B1]">
+              Terms of Service & Data Usage
+            </h2>
+            <div className="text-left space-y-4 text-gray-700">
+              <div>
+                <h3 className="font-semibold text-gray-800">
+                  Do you store my Spotify password?
+                </h3>
+                <p>
+                  No. We **never** see, handle, or store your Spotify password.
+                  All authentication is handled securely by Spotify&apos;s
+                  official login page.
+                </p>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">
+                  What Spotify data will be accessed?
+                </h3>
+                <p>
+                  To provide your personal stats, we request permission to
+                  access:
+                </p>
+                <ul className="list-disc list-inside ml-4 mt-2">
+                  <li>
+                    Your basic Spotify profile information (username and email).
+                  </li>
+                  <li>
+                    Your recently played tracks to build your listening history.
+                  </li>
+                  <li>Your top artists to determine genre preferences.</li>
+                </ul>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800">
+                  How often is my data retrieved?
+                </h3>
+                <p>
+                  To keep your stats up-to-date, our app automatically syncs
+                  your latest listening history from Spotify each time you open
+                  or refresh the dashboard. We do not track your listening in
+                  the background.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setIsModalOpen(false)}
+              className="mt-6 w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-md hover:opacity-90"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
