@@ -4,9 +4,17 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import * as DarkReader from "darkreader";
 
+let localStorage;
+if (typeof window !== "undefined") {
+  localStorage = window.localStorage;
+}
+
 export default function DarkModeToggle() {
   const [isDarkMode, setIsDarkMode] = useState(false);
-  const [isMounted, setIsMounted] = useState(false);
+
+  const toggleDarkMode = () => {
+    const newMode = !isDarkMode;
+    setIsDarkMode(newMode);
 
   useEffect(() => {
     // This effect only runs in the browser → localStorage exists here
