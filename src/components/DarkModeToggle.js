@@ -5,40 +5,48 @@ import Image from "next/image";
 import * as DarkReader from "darkreader";
 
 export default function DarkModeToggle() {
-  const [isDarkMode, setIsDarkMode] = useState(false);  // ← Removed <boolean>
-  const [isMounted, setIsMounted] = useState(false);    // ← Removed <boolean>
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
+    // This effect only runs in the browser → localStorage exists here
     setIsMounted(true);
 
     const saved = localStorage.getItem("darkMode");
-    const prefersDark = saved === "true";
-    setIsDarkMode(prefersDark);
-
-    if (prefersDark) {
-      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
+    if (saved === "true") {
+      setIsDarkMode(true);
+      DarkReader.enable({
+        brightness: 100,
+        contrast: 90,
+        sepia: 10,
+      });
+    } else {
+      DarkReader.disable();
     }
   }, []);
 
   const toggleDarkMode = () => {
     const newMode = !isDarkMode;
     setIsDarkMode(newMode);
-    localStorage.setItem("darkMode", String(newMode));
+
+    // Safe: this function only runs after mount (user click)
+    localStorage.setItem("darkMode", newMode);
 
     if (newMode) {
-      DarkReader.enable({ brightness: 100, contrast: 90, sepia: 10 });
+      DarkReader.enable({
+        brightness: 100,
+        contrast: 90,
+        sepia: 10,
+      });
     } else {
       DarkReader.disable();
     }
   };
 
-  // Avoid hydration mismatch
+  // Don't render anything until we're sure we're in the browser
+  // This prevents hydration errors and stops ESLint complaining
   if (!isMounted) {
-    return (
-      <button className="p-2 rounded-lg opacity-0" disabled aria-hidden="true">
-        <Image src="/sun.svg" alt="" width={24} height={24} />
-      </button>
-    );
+    return null;
   }
 
   return (
