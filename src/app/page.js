@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
 import React, { useState, useEffect } from "react";
-import { createClient } from '@supabase/supabase-js';
+import { createClient } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
-import Image from 'next/image'; // <--- THIS WAS MISSING
+import Image from "next/image"; // <--- THIS WAS MISSING
 import {
   BarChart,
   Bar,
@@ -21,6 +21,8 @@ import {
 import Navbar from "../components/Navbar";
 import LoadingSpinner from "../components/LoadingSpinner";
 
+/* eslint react/prop-types: 0 */
+
 // Initialize Supabase client
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
@@ -30,24 +32,26 @@ const supabase = createClient(
 // --- Reusable Chart/List Components ---
 function TopArtistsChart({ data, title }) {
   const [expandedText, setExpandedText] = useState(null);
-  {expandedText && (
-    <div
-      style={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "white",
-        padding: "20px",
-        borderRadius: "8px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-        zIndex: 9999,
-      }}
-      onClick={() => setExpandedText(null)}
-    >
-      {expandedText}
-    </div>
-  )}
+  {
+    expandedText && (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          zIndex: 9999,
+        }}
+        onClick={() => setExpandedText(null)}
+      >
+        {expandedText}
+      </div>
+    );
+  }
   if (!data || data.length === 0)
     return (
       <p className="text-center text-gray-500 p-4">No artist data available.</p>
@@ -65,42 +69,40 @@ function TopArtistsChart({ data, title }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
 
-          
           <YAxis
-          type="category"
-          dataKey="name"
-          width={10}     // tiny width; labels hidden
-          tick={false}   // hide broken labels
+            type="category"
+            dataKey="name"
+            width={10} // tiny width; labels hidden
+            tick={false} // hide broken labels
           />
           <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
           <Bar dataKey="count" fill="#0064B1">
-          
-          <LabelList 
-          dataKey="name"
-          position="insideLeft"
-          className="custom-bar-label"
-          content={(props) => {
-            const { x, y, width, value } = props;
+            <LabelList
+              dataKey="name"
+              position="insideLeft"
+              className="custom-bar-label"
+              content={(props) => {
+                const { x, y, value } = props;
 
-            const truncated =
-              value.length > 18 ? value.substring(0, 18) + "..." : value;
+                const truncated =
+                  value.length > 18 ? value.substring(0, 18) + "..." : value;
 
-            return (
-              <text
-                x={x + 5}
-                y={y + 15}
-                fill="#fff"
-                fontSize={16}
-                fontWeight="bold"          
-                textAnchor="start"
-                style={{ cursor: "pointer" }}
-                onClick={() => setExpandedText(value)}
-              >
-                {truncated}
-              </text>
-            );
-          }}
-          />
+                return (
+                  <text
+                    x={x + 5}
+                    y={y + 15}
+                    fill="#fff"
+                    fontSize={16}
+                    fontWeight="bold"
+                    textAnchor="start"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setExpandedText(value)}
+                  >
+                    {truncated}
+                  </text>
+                );
+              }}
+            />
           </Bar>
         </BarChart>
       </ResponsiveContainer>
@@ -267,28 +269,28 @@ function TopGenresList({ data, title, onGenreSelect }) {
   );
 }
 
-
-
 function TopSongsBarChart({ data, title }) {
   const [expandedText, setExpandedText] = useState(null);
-  {expandedText && (
-    <div
-      style={{
-        position: "fixed",
-        top: "50%",
-        left: "50%",
-        transform: "translate(-50%, -50%)",
-        background: "white",
-        padding: "20px",
-        borderRadius: "8px",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
-        zIndex: 9999,
-      }}
-      onClick={() => setExpandedText(null)}
-    >
-      {expandedText}
-    </div>
-  )}
+  {
+    expandedText && (
+      <div
+        style={{
+          position: "fixed",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          background: "white",
+          padding: "20px",
+          borderRadius: "8px",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+          zIndex: 9999,
+        }}
+        onClick={() => setExpandedText(null)}
+      >
+        {expandedText}
+      </div>
+    );
+  }
 
   if (!data || data.length === 0)
     return (
@@ -307,41 +309,40 @@ function TopSongsBarChart({ data, title }) {
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis type="number" allowDecimals={false} />
           <YAxis
-          type="category"
-          dataKey="name"
-          width={10}     // tiny width; labels hidden
-          tick={false}   // hide broken labels
+            type="category"
+            dataKey="name"
+            width={10} // tiny width; labels hidden
+            tick={false} // hide broken labels
           />
           <Tooltip cursor={{ fill: "rgba(238, 238, 238, 0.5)" }} />
-          <Bar dataKey="count" fill="#C45517" >
-          <LabelList 
-          dataKey="name"
-          position="insideLeft"
-          className="custom-bar-label"
-          content={(props) => {
-            const { x, y, width, value } = props;
+          <Bar dataKey="count" fill="#C45517">
+            <LabelList
+              dataKey="name"
+              position="insideLeft"
+              className="custom-bar-label"
+              content={(props) => {
+                const { x, y, value } = props;
 
-            const truncated =
-              value.length > 18 ? value.substring(0, 18) + "..." : value;
+                const truncated =
+                  value.length > 18 ? value.substring(0, 18) + "..." : value;
 
-            return (
-              <text
-                x={x + 5}
-                y={y + 15}
-                fill="#fff"
-                fontSize={16}
-                fontWeight="bold"          
-                textAnchor="start"
-                style={{ cursor: "pointer" }}
-                onClick={() => setExpandedText(value)}
-              >
-                {truncated}
-              </text>
-            );
-          }}
-          />
+                return (
+                  <text
+                    x={x + 5}
+                    y={y + 15}
+                    fill="#fff"
+                    fontSize={16}
+                    fontWeight="bold"
+                    textAnchor="start"
+                    style={{ cursor: "pointer" }}
+                    onClick={() => setExpandedText(value)}
+                  >
+                    {truncated}
+                  </text>
+                );
+              }}
+            />
           </Bar>
-          
         </BarChart>
       </ResponsiveContainer>
     </div>
@@ -425,41 +426,17 @@ const TabButton = ({ label, activeTab, onClick }) => {
   );
 };
 
-const CustomYAxisTick = ({ x, y, payload, onClick }) => {
-  const text = payload.value;
-  const truncated =
-    text.length > 18 ? text.substring(0, 18) + "..." : text;
-
-  return (
-    <text
-      x={x + 10}       // Slight padding only
-      y={y + 5}
-      textAnchor="start"  // Show label to the right of axis
-      fontSize={12}
-      fill="#333"
-      style={{ cursor: "pointer" }}
-      onClick={() => onClick(text)}
-    >
-      {truncated}
-    </text>
-  );
-};
-
-
-
-
-
 export default function Home() {
   const router = useRouter();
   const [session, setSession] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  
+
   // Auth state
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState("");
 
   // Data state
   const [fullTopArtists, setFullTopArtists] = useState([]);
@@ -472,7 +449,7 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState("topartists");
   const [selectedGenre, setSelectedGenre] = useState(null);
   const [songsForGenre, setSongsForGenre] = useState([]);
-  
+
   const [artistViewType, setArtistViewType] = useState("bar");
   const [songViewType, setSongViewType] = useState("bar");
   const [genreViewType, setGenreViewType] = useState("pie");
@@ -670,6 +647,7 @@ export default function Home() {
       email,
       password,
       options: {
+        // eslint-disable-next-line no-undef
         emailRedirectTo: window.location.origin,
       },
     });
@@ -801,9 +779,7 @@ export default function Home() {
                       Your recently played tracks to build your listening
                       history.
                     </li>
-                    <li>
-                      Your top artists to determine genre preferences.
-                    </li>
+                    <li>Your top artists to determine genre preferences.</li>
                   </ul>
                 </div>
                 <div>

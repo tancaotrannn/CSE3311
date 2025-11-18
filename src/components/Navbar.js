@@ -28,12 +28,6 @@ export default function Navbar({ user, onSignOut }) {
         {/* Center: Navigation Tabs */}
         <div className="flex gap-8">
           <Link
-            href="#"
-            className={"text-gray-500 hover:text-[#0064b1] transition"}
-          >
-            Home
-          </Link>
-          <Link
             href="/"
             className={
               pathname === "/"
